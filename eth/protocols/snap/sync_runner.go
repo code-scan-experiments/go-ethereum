@@ -26,6 +26,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/rlp"
 )
 
 // syncTaskThreshold bounds the jobs buffered in the sync runner. Submissions
@@ -248,8 +249,9 @@ func (s *syncer) executeAccountJob(job *accountJob) {
 
 		if !job.needHeal[i] {
 			// If the storage task is complete, drop it into the stack trie
-			// to generate account trie nodes for it
-			full, err := types.FullAccountRLP(slim) // TODO(karalabe): Slim parsing can be omitted
+			// to generate account trie nodes for it. The account was decoded
+			// from full RLP, so encoding it directly yields the trie value.
+			full, err := rlp.EncodeToBytes(job.accounts[i])
 			if err != nil {
 				panic(err) // Really shouldn't ever happen
 			}
