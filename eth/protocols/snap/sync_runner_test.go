@@ -26,6 +26,9 @@ import (
 	"github.com/holiman/uint256"
 )
 
+// TestAccountFullRLPMatchesSlimRoundTrip verifies that directly RLP-encoding an
+// account decoded from full RLP (as done in OnAccounts) yields exactly the same
+// bytes as the historical slim-encode -> FullAccountRLP round trip.
 func TestAccountFullRLPMatchesSlimRoundTrip(t *testing.T) {
 	codeHash := bytes.Repeat([]byte{0x11}, 32)
 	accounts := []struct {
@@ -80,6 +83,7 @@ func TestAccountFullRLPMatchesSlimRoundTrip(t *testing.T) {
 
 	for _, test := range accounts {
 		t.Run(test.name, func(t *testing.T) {
+			// Mirror the sync path: accounts arrive as full RLP and are decoded.
 			full, err := rlp.EncodeToBytes(&test.account)
 			if err != nil {
 				t.Fatalf("failed to encode account: %v", err)
@@ -88,6 +92,7 @@ func TestAccountFullRLPMatchesSlimRoundTrip(t *testing.T) {
 			if err := rlp.DecodeBytes(full, account); err != nil {
 				t.Fatalf("failed to decode account: %v", err)
 			}
+			// Direct encoding (new path) must match the slim round trip (old path).
 			got, err := rlp.EncodeToBytes(account)
 			if err != nil {
 				t.Fatalf("failed to encode decoded account: %v", err)
@@ -103,6 +108,8 @@ func TestAccountFullRLPMatchesSlimRoundTrip(t *testing.T) {
 	}
 }
 
+// BenchmarkAccountFullRLPRoundTrip measures the previous per-account cost:
+// slim encode followed by a slim decode + full re-encode.
 func BenchmarkAccountFullRLPRoundTrip(b *testing.B) {
 	account := nonEmptyAccount()
 	b.ReportAllocs()
@@ -114,6 +121,8 @@ func BenchmarkAccountFullRLPRoundTrip(b *testing.B) {
 	}
 }
 
+// BenchmarkAccountFullRLPDirect measures the current per-account cost: slim
+// encode plus a direct full encode of the already-decoded account.
 func BenchmarkAccountFullRLPDirect(b *testing.B) {
 	account := nonEmptyAccount()
 	b.ReportAllocs()
@@ -126,6 +135,8 @@ func BenchmarkAccountFullRLPDirect(b *testing.B) {
 	}
 }
 
+// nonEmptyAccount returns an account with non-empty root and code hash so the
+// benchmarks exercise the full encoding width.
 func nonEmptyAccount() *types.StateAccount {
 	return &types.StateAccount{
 		Nonce:    42,

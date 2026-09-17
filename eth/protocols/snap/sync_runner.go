@@ -249,7 +249,8 @@ func (s *syncer) executeAccountJob(job *accountJob) {
 
 		if !job.needHeal[i] {
 			// If the storage task is complete, drop it into the stack trie
-			// to generate account trie nodes for it
+			// to generate account trie nodes for it. The account was decoded
+			// from full RLP, so encoding it directly yields the trie value.
 			full, err := rlp.EncodeToBytes(job.accounts[i])
 			if err != nil {
 				panic(err) // Really shouldn't ever happen
