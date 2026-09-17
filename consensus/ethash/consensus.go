@@ -286,9 +286,6 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 		return fmt.Errorf("invalid slotNumber, have %#x, expected nil", *header.SlotNumber)
 	}
 	// Add some fake checks for tests
-	if ethash.fakeDelay != nil {
-		time.Sleep(*ethash.fakeDelay)
-	}
 	if ethash.fakeFail != nil && *ethash.fakeFail == header.Number.Uint64() {
 		return errors.New("invalid tester pow")
 	}

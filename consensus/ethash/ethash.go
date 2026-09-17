@@ -18,8 +18,6 @@
 package ethash
 
 import (
-	"time"
-
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -27,9 +25,8 @@ import (
 // Ethash is a consensus engine based on proof-of-work implementing the ethash
 // algorithm.
 type Ethash struct {
-	fakeFail  *uint64        // Block number which fails PoW check even in fake mode
-	fakeDelay *time.Duration // Time delay to sleep for before returning from verify
-	fakeFull  bool           // Accepts everything as valid
+	fakeFail *uint64 // Block number which fails PoW check even in fake mode
+	fakeFull bool    // Accepts everything as valid
 }
 
 // NewFaker creates an ethash consensus engine with a fake PoW scheme that accepts
@@ -45,15 +42,6 @@ func NewFaker() *Ethash {
 func NewFakeFailer(fail uint64) *Ethash {
 	return &Ethash{
 		fakeFail: &fail,
-	}
-}
-
-// NewFakeDelayer creates a ethash consensus engine with a fake PoW scheme that
-// accepts all blocks as valid, but delays verifications by some time, though
-// they still have to conform to the Ethereum consensus rules.
-func NewFakeDelayer(delay time.Duration) *Ethash {
-	return &Ethash{
-		fakeDelay: &delay,
 	}
 }
 
